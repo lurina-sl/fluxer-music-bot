@@ -1,4 +1,4 @@
-export type TrackIdentifier = string;
+import { TrackInfo } from './types';
 
 export class Track {
   public readonly id: string;
@@ -7,19 +7,10 @@ export class Track {
   public readonly url: string;
   public readonly durationSeconds?: number;
   public readonly thumbnail?: string;
-  public readonly source: 'youtube' | 'soundcloud' | 'direct' | 'unknown';
+  public readonly source: TrackInfo['source'];
   public readonly requestedBy?: string;
 
-  constructor(data: {
-    id?: string;
-    title: string;
-    artist?: string;
-    url: string;
-    durationSeconds?: number;
-    thumbnail?: string;
-    source?: 'youtube' | 'soundcloud' | 'direct' | 'unknown';
-    requestedBy?: string;
-  }) {
+  constructor(data: Partial<TrackInfo> & Pick<TrackInfo, 'title' | 'url'>) {
     this.id = data.id ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     this.title = data.title;
     this.artist = data.artist;

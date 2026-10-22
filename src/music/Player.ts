@@ -9,7 +9,7 @@ export class Player {
   public loopMode: LoopMode = 'NONE';
   public autoplay = false;
   public state: PlayerState = 'IDLE';
-  public voiceConnection: any = null;
+  public voiceConnection: unknown = null;
   public playerControls: Record<string, unknown> = {};
 
   constructor(private readonly guildId: string, maxQueueSize = 200) {
@@ -55,7 +55,8 @@ export class Player {
 
   async skip(): Promise<void> {
     if (this.queue.size() > 0) {
-      this.currentTrack = this.queue.remove(0) ?? null;
+      const nextTrack = this.queue.remove(0);
+      this.currentTrack = nextTrack ?? this.currentTrack;
     } else {
       this.currentTrack = null;
       this.state = 'IDLE';
@@ -80,5 +81,17 @@ export class Player {
 
   get hasCurrentTrack(): boolean {
     return this.currentTrack !== null;
+  }
+
+  toJSON(): Record<string, unknown> {
+    return {
+      guildId: this.guildId,
+      currentTrack: this.currentTrack?.toJSON() ?? null,
+      queue: this.queue.list().map((track) => track.toJSON()),
+      volume: this.volume,
+      loopMode: this.loopMode,
+      autoplay: this.autoplay,
+      state: this.state,
+    };
   }
 }

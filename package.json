@@ -1,18 +1,19 @@
 {
   "name": "fluxer-music-bot",
   "version": "1.0.0",
-  "description": "Fluxer music bot built with TypeScript, modular audio layer, and LiveKit-compatible voice architecture.",
+  "description": "Bot de música para Fluxer com player, fila e controles de reprodução.",
   "main": "dist/index.js",
   "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
-    "lint": "tsc --noEmit -p tsconfig.json"
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test dist/**/*.test.js"
   },
   "keywords": [
     "fluxer",
-    "music-bot",
+    "music",
     "livekit",
     "voice",
     "typescript"

@@ -7,11 +7,16 @@ export class ConnectionManager {
     this.voiceManager = new VoiceManager();
   }
 
-  async joinVoiceChannel(guildId: string, channelId: string): Promise<any> {
+  join(guildId: string, channelId: string): Record<string, unknown> {
     return this.voiceManager.join({ guildId, channelId });
   }
 
-  async leaveVoiceChannel(guildId: string): Promise<void> {
+  leave(guildId: string): void {
     this.voiceManager.leave(guildId);
+  }
+
+  reconnect(guildId: string, channelId: string): Record<string, unknown> {
+    this.voiceManager.leave(guildId);
+    return this.voiceManager.join({ guildId, channelId });
   }
 }

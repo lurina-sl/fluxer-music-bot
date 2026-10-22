@@ -4,7 +4,7 @@ export type FluxerCommandContext = {
   userId?: string;
   username?: string;
   args: string[];
-  reply: (message: string) => Promise<unknown>;
+  reply: (message: string) => Promise<unknown> | unknown;
 };
 
 export type FluxerCommandHandler = (context: FluxerCommandContext) => Promise<void> | void;

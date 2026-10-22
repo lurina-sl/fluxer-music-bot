@@ -9,6 +9,6 @@ async function main(): Promise<void> {
 
 main().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
-  console.error('[FATAL] Failed to initialize Fluxer music bot:', message);
+  console.error('[FATAL] Fluxer Music Bot failed to start:', message);
   process.exit(1);
 });

@@ -9,16 +9,16 @@ npm-debug.log*
 .env.local
 .env.*.local
 
-# OS/editor
-.DS_Store
-.idea/
-.vscode/
-*.swp
-
 # SQLite
 *.sqlite
 *.sqlite3
 
-# Temporary files
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# temporary
 .tmp/
 tmp/

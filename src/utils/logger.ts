@@ -4,8 +4,7 @@ class Logger {
   private readonly prefix = '[FluxerMusicBot]';
 
   private format(level: LogLevel, message: string): string {
-    const timestamp = new Date().toISOString();
-    return `${timestamp} ${this.prefix} [${level}] ${message}`;
+    return `${new Date().toISOString()} ${this.prefix} [${level}] ${message}`;
   }
 
   info(message: string): void {

@@ -7,9 +7,9 @@ export type EnvironmentConfig = {
   fluxerApiUrl: string;
   fluxerGatewayUrl: string;
   databaseUrl: string;
+  defaultPrefix: string;
   nodelinkUrl: string;
   nodelinkPassword: string;
-  defaultPrefix: string;
   voiceLeaveTimeoutMs: number;
   maxQueueSize: number;
   defaultVolume: number;
@@ -23,9 +23,9 @@ export const config: EnvironmentConfig = {
   fluxerApiUrl: process.env.FLUXER_API_URL ?? 'https://api.fluxer.app',
   fluxerGatewayUrl: process.env.FLUXER_GATEWAY_URL ?? 'wss://gateway.fluxer.app',
   databaseUrl: process.env.DATABASE_URL ?? './data/fluxer-music-bot.sqlite',
+  defaultPrefix: (process.env.DEFAULT_PREFIX ?? '!').trim() || '!',
   nodelinkUrl: process.env.NODELINK_URL ?? '',
   nodelinkPassword: process.env.NODELINK_PASSWORD ?? '',
-  defaultPrefix: (process.env.DEFAULT_PREFIX ?? '!').trim() || '!',
   voiceLeaveTimeoutMs: Number(process.env.VOICE_LEAVE_TIMEOUT_MS ?? 300000),
   maxQueueSize: Number(process.env.MAX_QUEUE_SIZE ?? 200),
   defaultVolume: Number(process.env.DEFAULT_VOLUME ?? 100),
@@ -35,5 +35,5 @@ export const config: EnvironmentConfig = {
 };
 
 if (!config.fluxerBotToken) {
-  console.warn('[WARN] FLUXER_BOT_TOKEN is missing. The bot will not authenticate until it is configured.');
+  console.warn('[WARN] FLUXER_BOT_TOKEN is not configured. The bot is running in offline mode until it is set.');
 }

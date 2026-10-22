@@ -1,14 +1,17 @@
 import { DatabaseService } from '../database/database';
 import { logger } from '../utils/logger';
 import { FluxerCommandDefinition } from '../types/fluxer';
+import { PlayerManager } from '../music/PlayerManager';
+import { TrackResolver } from '../music/resolver/TrackResolver';
 
 export class FluxerBotClient {
   private readonly token: string;
   private readonly apiUrl: string;
   private readonly gatewayUrl: string;
   private readonly defaultPrefix: string;
-  private readonly logger = logger;
   private readonly database: DatabaseService;
+  private readonly playerManager: PlayerManager;
+  private readonly trackResolver: TrackResolver;
   private commandRegistry: Map<string, FluxerCommandDefinition> = new Map();
   private connected = false;
 
@@ -17,14 +20,17 @@ export class FluxerBotClient {
     apiUrl: string;
     gatewayUrl: string;
     defaultPrefix: string;
-    logger: typeof logger;
     database: DatabaseService;
+    playerManager: PlayerManager;
+    trackResolver: TrackResolver;
   }) {
     this.token = options.token;
     this.apiUrl = options.apiUrl;
     this.gatewayUrl = options.gatewayUrl;
     this.defaultPrefix = options.defaultPrefix;
     this.database = options.database;
+    this.playerManager = options.playerManager;
+    this.trackResolver = options.trackResolver;
   }
 
   setCommandRegistry(registry: Map<string, FluxerCommandDefinition>): void {
@@ -33,20 +39,19 @@ export class FluxerBotClient {
 
   async connect(): Promise<void> {
     if (!this.token) {
-      this.logger.warn('Fluxer token is empty. Bot is running in offline mode until env is configured.');
+      logger.warn('Fluxer token is absent. The bot is running in offline mode until the environment is configured.');
       return;
     }
 
-    this.logger.info(`Connecting to Fluxer API at ${this.apiUrl}`);
-    this.logger.info(`Connecting to Fluxer Gateway at ${this.gatewayUrl}`);
-
+    logger.info(`Connecting to Fluxer API at ${this.apiUrl}`);
+    logger.info(`Connecting to Fluxer Gateway at ${this.gatewayUrl}`);
     this.connected = true;
-    this.logger.info('Connected to Fluxer gateway and ready for commands.');
+    logger.info('Connected to Fluxer gateway and ready to receive commands.');
   }
 
   async disconnect(): Promise<void> {
     this.connected = false;
-    this.logger.info('Disconnected from Fluxer gateway.');
+    logger.info('Disconnected from Fluxer gateway.');
   }
 
   isConnected(): boolean {
@@ -67,5 +72,13 @@ export class FluxerBotClient {
 
   getDatabase(): DatabaseService {
     return this.database;
+  }
+
+  getPlayerManager(): PlayerManager {
+    return this.playerManager;
+  }
+
+  getTrackResolver(): TrackResolver {
+    return this.trackResolver;
   }
 }

@@ -1,5 +1,6 @@
 import { AudioSource } from '../sources/AudioSource';
 import { DirectUrlSource } from '../sources/DirectUrlSource';
+import { SoundCloudSource } from '../sources/SoundCloudSource';
 import { YouTubeSource } from '../sources/YouTubeSource';
 import { Track } from '../Track';
 
@@ -7,7 +8,7 @@ export class TrackResolver {
   private readonly sources: AudioSource[];
 
   constructor() {
-    this.sources = [new YouTubeSource(), new DirectUrlSource()];
+    this.sources = [new YouTubeSource(), new SoundCloudSource(), new DirectUrlSource()];
   }
 
   async resolve(query: string, requester?: string): Promise<Track[]> {
@@ -25,10 +26,10 @@ export class TrackResolver {
           requestedBy: requester,
         }));
       } catch {
-        // Try the next source if this one cannot resolve the input.
+        // keeps trying other sources in order
       }
     }
 
-    throw new Error('Unable to resolve the music source for the provided query.');
+    throw new Error('Unable to resolve the music source for the requested query.');
   }
 }

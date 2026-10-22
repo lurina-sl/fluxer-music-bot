@@ -44,7 +44,7 @@ export class Queue {
 
   move(fromIndex: number, toIndex: number): void {
     if (fromIndex < 0 || toIndex < 0 || fromIndex >= this.tracks.length || toIndex >= this.tracks.length) {
-      throw new Error('Invalid queue indexes.');
+      throw new Error('Invalid indexes for queue move.');
     }
 
     const [track] = this.tracks.splice(fromIndex, 1);

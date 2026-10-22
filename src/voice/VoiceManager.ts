@@ -6,16 +6,10 @@ export type VoiceJoinPayload = {
   selfDeaf?: boolean;
 };
 
-export type VoiceLeavePayload = {
-  guildId: string;
-  channelId?: string;
-  connectionId?: string;
-};
-
 export class VoiceManager {
-  private readonly connections = new Map<string, any>();
+  private readonly connections = new Map<string, Record<string, unknown>>();
 
-  join(payload: VoiceJoinPayload): any {
+  join(payload: VoiceJoinPayload): Record<string, unknown> {
     const connection = {
       guildId: payload.guildId,
       channelId: payload.channelId,
@@ -33,7 +27,11 @@ export class VoiceManager {
     this.connections.delete(guildId);
   }
 
-  get(guildId: string): any {
+  get(guildId: string): Record<string, unknown> | undefined {
     return this.connections.get(guildId);
+  }
+
+  has(guildId: string): boolean {
+    return this.connections.has(guildId);
   }
 }

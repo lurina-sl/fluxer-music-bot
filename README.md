@@ -1,53 +1,32 @@
 # Fluxer Music Bot
 
-A modular, production-ready music bot for Fluxer built with TypeScript and the official Fluxer SDK ecosystem.
+Bot modular e pronto para Fluxer com camada de reprodução, fila por servidor, armazenamento SQLite e suporte a várias fontes de áudio.
 
-## Requirements
+## Requisitos
 
 - Node.js 20+
-- npm or pnpm
-- A Fluxer bot token
-- Optional: LiveKit-compatible voice server / NodeLink or Lavalink setup
-- Optional: ffmpeg for local audio conversion
+- npm
+- Token do bot Fluxer
+- Fluxer API e Gateway válidos
+- (Opcional) servidor de áudio compatível com LiveKit / NodeLink / Lavalink
+- FFmpeg instalado caso você queira converter ou normalizar arquivos de áudio
 
-## Important note about Fluxer docs and voice
+## Observação importante sobre Fluxer
 
-The official Fluxer documentation is still evolving. The key public sources used for this project are:
+A documentação oficial do Fluxer ainda está evoluindo, especialmente nas áreas de autenticação, gateway, voice e LiveKit. Esta base foi montada com arquitetura modular para facilitar a adaptação à SDK e ao ambiente real do Fluxer, sem inventar endpoints ou eventos.
 
-- https://docs.fluxer.app/
-- https://fluxer.js.org/
-- https://github.com/fluxerjs/core
-- https://github.com/fluxerjs/voice
-
-The project follows the current guidance available there while keeping the code modular and resilient to API changes by isolating Fluxer-specific runtime assumptions behind wrappers.
-
-## Project structure
+## Estrutura do projeto
 
 ```text
 fluxer-music-bot/
 ├── src/
+│   ├── app.ts
+│   ├── index.ts
 │   ├── bot/
 │   │   ├── client.ts
-│   │   ├── commandRegistry.ts
-│   │   └── eventBus.ts
+│   │   └── commandRegistry.ts
 │   ├── commands/
-│   │   ├── music/
-│   │   │   ├── autoplay.ts
-│   │   │   ├── clear.ts
-│   │   │   ├── leave.ts
-│   │   │   ├── loop.ts
-│   │   │   ├── nowplaying.ts
-│   │   │   ├── pause.ts
-│   │   │   ├── play.ts
-│   │   │   ├── queue.ts
-│   │   │   ├── remove.ts
-│   │   │   ├── resume.ts
-│   │   │   ├── search.ts
-│   │   │   ├── shuffle.ts
-│   │   │   ├── skip.ts
-│   │   │   ├── stop.ts
-│   │   │   └── volume.ts
-│   │   └── registerCommands.ts
+│   │   └── music.ts
 │   ├── config/
 │   │   └── env.ts
 │   ├── database/
@@ -67,6 +46,7 @@ fluxer-music-bot/
 │   │   └── sources/
 │   │       ├── AudioSource.ts
 │   │       ├── DirectUrlSource.ts
+│   │       ├── SoundCloudSource.ts
 │   │       ├── YouTubeSource.ts
 │   │       └── index.ts
 │   ├── types/
@@ -75,11 +55,9 @@ fluxer-music-bot/
 │   │   ├── errors.ts
 │   │   ├── logger.ts
 │   │   └── validators.ts
-│   ├── voice/
-│   │   ├── ConnectionManager.ts
-│   │   └── VoiceManager.ts
-│   ├── index.ts
-│   └── app.ts
+│   └── voice/
+│       ├── ConnectionManager.ts
+│       └── VoiceManager.ts
 ├── .env.example
 ├── .gitignore
 ├── package.json
@@ -88,30 +66,30 @@ fluxer-music-bot/
 └── LICENSE
 ```
 
-## Installation
+## Instalação
 
 ```bash
 npm install
 ```
 
-## Environment configuration
+## Configuração do ambiente
 
-Copy the example file:
+Crie o arquivo `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-Then fill in the variables:
+Preencha os valores reais:
 
 ```env
-FLUXER_BOT_TOKEN=your_fluxer_token
+FLUXER_BOT_TOKEN=seu_token
 FLUXER_API_URL=https://api.fluxer.app
 FLUXER_GATEWAY_URL=wss://gateway.fluxer.app
 DATABASE_URL=./data/fluxer-music-bot.sqlite
+DEFAULT_PREFIX=! 
 NODELINK_URL=
 NODELINK_PASSWORD=
-DEFAULT_PREFIX=! 
 VOICE_LEAVE_TIMEOUT_MS=300000
 MAX_QUEUE_SIZE=200
 DEFAULT_VOLUME=100
@@ -120,27 +98,28 @@ AUTO_LEAVE_CHANNEL_EMPTY=true
 AUDIO_SOURCE_MODE=resolver
 ```
 
-## Running the bot
-
-For development:
+## Execução em desenvolvimento
 
 ```bash
 npm run dev
 ```
 
-For production build:
+## Build
 
 ```bash
 npm run build
+```
+
+## Iniciar em produção
+
+```bash
 npm start
 ```
 
-## Commands
+## Comandos principais
 
-The bot exposes a Fluxer-compatible command layer with prefix configuration. Common commands include:
-
-- `/play <query>` or `!play <query>`
-- `/search <query>` or `!search <query>`
+- `/play <música>`
+- `/search <música>`
 - `/pause`
 - `/resume`
 - `/skip`
@@ -151,65 +130,62 @@ The bot exposes a Fluxer-compatible command layer with prefix configuration. Com
 - `/volume <0-200>`
 - `/shuffle`
 - `/loop`
-- `/remove <index>`
+- `/remove <posição>`
 - `/clear`
 - `/autoplay`
 
-## Audio architecture
+Também é suportado o prefixo configurável, como `!play música`.
 
-The design is intentionally modular:
+## Arquitertura de áudio
 
-- `music/sources/` handles providers such as YouTube, direct URLs, and future plugins.
-- `music/resolver/` resolves user input into track metadata and source URLs.
-- `music/Queue.ts` stores server-scoped playback queues.
-- `music/Player.ts` manages playback state transitions, volume, looping, and autoplay.
-- `voice/` manages the Fluxer/LiveKit connection lifecycle.
+O projeto separa a lógica em camadas:
 
-## SQLite
+- `music/sources`: provedores e resolvers de fontes. Pode incluir YouTube, URL direta, SoundCloud e extensões futuras.
+- `music/resolver`: transforma texto do usuário em estrutura de faixa.
+- `music/Queue`: fila por servidor.
+- `music/Player`: estado do player e controle de reprodução.
+- `voice/`: conexão e reconexão no sistema de voz Fluxer/LiveKit.
 
-The database layer is optional for basic playback, but included to support future server settings and per-guild defaults such as:
+## Banco de dados
 
-- prefix
-- default volume
+O SQLite é opcional para reprodução básica, mas foi incluído para permitir configurações futuras por servidor, como:
+
+- prefixo
+- volume padrão
 - autoplay
-- 24/7 mode
-- language
-- music preferences
+- 24/7
+- idioma
+- preferências musicais
 
 ## FFmpeg
 
-If you plan to transcode or normalize audio from direct URLs or incompatible sources, install FFmpeg and make sure it is available in PATH.
+Caso o transporte de áudio ou conversão de arquivos exija, instale o FFmpeg:
 
-On Ubuntu/Debian:
+Ubuntu/Debian:
 
 ```bash
-sudo apt update
-sudo apt install ffmpeg
+sudo apt update && sudo apt install ffmpeg
 ```
 
-## Troubleshooting
+## Solução de problemas
 
-### Bot does not connect
+### O bot não conecta ao Fluxer
 
-- Verify `FLUXER_BOT_TOKEN` is valid.
-- Confirm the Fluxer API and Gateway URLs are correct.
-- Check that the bot has permission to connect to the correct channels.
+- Verifique `FLUXER_BOT_TOKEN`.
+- Confirme `FLUXER_API_URL` e `FLUXER_GATEWAY_URL`.
+- Verifique permissões e infraestrutura do Fluxer.
 
-### No audio playback
+### Falha na reprodução
 
-- Confirm the track resolver returns a valid playable URL.
-- Check the source adapter for the track provider.
-- Make sure the bot has joined a voice channel and the LiveKit session is active.
+- Confirme que o resolutor conseguiu montar uma URL válida.
+- Teste a fonte de áudio diretamente.
+- Verifique se o bot está conectado ao canal de voz.
 
-### Queue not persisting
+### Erro no banco SQLite
 
-- Ensure the SQLite path exists and is writable.
-- Check the database connection in `src/database/database.ts`.
+- Certifique-se de que a pasta `data` existe e é gravável.
+- Confirme a string `DATABASE_URL`.
 
-## Notes on Fluxer voice and LiveKit
-
-Fluxer voice support is tied to the current Fluxer + LiveKit ecosystem. The code in this repository isolates Fluxer-specific API assumptions behind wrappers so the bot can be updated as Fluxer changes without rewriting the entire command system.
-
-## License
+## Licença
 
 MIT

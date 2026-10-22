@@ -1,7 +1,7 @@
 import * as Database from 'better-sqlite3';
 
-import { logger } from '../utils/logger';
 import { config } from '../config/env';
+import { logger } from '../utils/logger';
 
 export class DatabaseService {
   private readonly db: Database.Database;
@@ -32,7 +32,6 @@ export class DatabaseService {
 
   close(): void {
     this.db.close();
-    logger.info('SQLite database closed.');
   }
 
   getServerSettings(guildId: string): Record<string, unknown> {
@@ -53,25 +52,25 @@ export class DatabaseService {
   }
 
   upsertServerSettings(guildId: string, values: Record<string, unknown>): void {
-    const sql = `
-      INSERT INTO server_settings (guild_id, prefix, default_volume, autoplay, 24_7, language, updated_at)
-      VALUES (@guild_id, @prefix, @default_volume, @autoplay, @24_7, @language, CURRENT_TIMESTAMP)
-      ON CONFLICT(guild_id) DO UPDATE SET
-        prefix = excluded.prefix,
-        default_volume = excluded.default_volume,
-        autoplay = excluded.autoplay,
-        24_7 = excluded.24_7,
-        language = excluded.language,
-        updated_at = CURRENT_TIMESTAMP;
-    `;
-
-    this.db.prepare(sql).run({
-      guild_id: guildId,
-      prefix: values.prefix ?? config.defaultPrefix,
-      default_volume: values.default_volume ?? config.defaultVolume,
-      autoplay: values.autoplay ?? 0,
-      '24_7': values['24_7'] ?? 0,
-      language: values.language ?? 'pt-BR',
-    });
+    this.db
+      .prepare(`
+        INSERT INTO server_settings (guild_id, prefix, default_volume, autoplay, 24_7, language, updated_at)
+        VALUES (@guild_id, @prefix, @default_volume, @autoplay, @24_7, @language, CURRENT_TIMESTAMP)
+        ON CONFLICT(guild_id) DO UPDATE SET
+          prefix = excluded.prefix,
+          default_volume = excluded.default_volume,
+          autoplay = excluded.autoplay,
+          24_7 = excluded.24_7,
+          language = excluded.language,
+          updated_at = CURRENT_TIMESTAMP;
+      `)
+      .run({
+        guild_id: guildId,
+        prefix: values.prefix ?? config.defaultPrefix,
+        default_volume: values.default_volume ?? config.defaultVolume,
+        autoplay: Number(values.autoplay ?? 0),
+        '24_7': Number(values['24_7'] ?? 0),
+        language: values.language ?? 'pt-BR',
+      });
   }
 }
